@@ -10,7 +10,7 @@ from PIL import Image
 import crud, models, schemas
 from database import SessionLocal, engine
 from fastapi.staticfiles import StaticFiles
-
+from fastapi.responses import RedirectResponse
 from dotenv import load_dotenv
 load_dotenv() 
 
@@ -35,7 +35,7 @@ app.add_middleware(
 
 BASE_URL = os.environ['OWN_BASE_URL']
 
-
+print(BASE_URL)
 # Dependency
 def get_db():
     db = SessionLocal()
@@ -128,7 +128,8 @@ def create_checkout(item_id:int, quantity:int, db: Session = Depends(get_db)):
     db_user = crud.get_user(db=db, user_id=db_item.owner_id)
     if not db_user:
         raise HTTPException(status_code=400, detail="ticket owner doesnt exist anymore")
-    result =  create_checkout_link(db_user.access_key, db_user.location_id, db_item.title, str(quantity), db_item.price, redirect_url=BASE_URL+'ticket-bought',currency=db_user.currency,)
+        
+    result =  create_checkout_link(db_user.access_key, db_user.location_id, db_item.title, str(quantity), db_item.price, redirect_url=os.environ["OWN_FRONTEND_URL"]+'ticket-bought',currency=db_user.currency,)
     print(item_id)
     if result.is_success():
         #save transaction
@@ -146,7 +147,7 @@ def create_checkout(item_id:int, quantity:int, db: Session = Depends(get_db)):
         return HTTPException(status_code=400, detail=result.errors)
 
 
-@app.get('/ticket-bought')
+@app.get('/ticket-bought', response_class=RedirectResponse, status_code=302)
 def ticket_bought(checkoutId:str, transactionId:str, db: Session = Depends(get_db) ):
     print(checkoutId, transactionId)
 
@@ -173,7 +174,7 @@ def ticket_bought(checkoutId:str, transactionId:str, db: Session = Depends(get_d
     db.add(db_checkout)
     db.commit()
     db.refresh(db_checkout)
-    return {'message':"thank you for buying from us", 'checkout': checkoutId, 'transaction':transactionId}
+    return f'{os.environ["OWN_FRONTEND_URL"]}ticket-bought'
 
 
 @app.get('/oauth-redirect')

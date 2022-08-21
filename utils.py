@@ -6,7 +6,7 @@ def make_idemp_key():
 
 
 def create_checkout_link(access_token, location_id, ticket_name, quantity, unit_price, redirect_url,currency='USD'):
-    print(currency)
+    print(currency, redirect_url)
     if not currency:
         currency = "USD"
     client = Client(

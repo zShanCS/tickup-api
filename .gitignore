@@ -1,2 +1,4 @@
 .env
 sql_app.db
+images/
+/images
