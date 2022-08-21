@@ -33,7 +33,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-BASE_URL = 'http://127.0.0.1:8000/'
+BASE_URL = os.environ['OWN_BASE_URL']
 
 
 # Dependency
