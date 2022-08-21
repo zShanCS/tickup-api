@@ -202,6 +202,7 @@ def redirect(code:str, response_type:str, state:str, db: Session = Depends(get_d
         db_user = models.User(name=name, merchant_id=merchant_id, location_id=location_id, currency=currency, access_key=access_token)
         db.add(db_user)
         db.commit()
+        
         db.refresh(db_user)
         return db_user
 
