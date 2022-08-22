@@ -3,7 +3,9 @@ from square.client import Client
 import os
 import uuid
 from typing import List
-from fastapi.middleware.cors import CORSMiddleware
+
+from starlette.middleware.cors import CORSMiddleware
+
 from fastapi import Depends, FastAPI, HTTPException, Form, UploadFile
 from sqlalchemy.orm import Session
 from PIL import Image as PIL_Image
