@@ -144,7 +144,7 @@ def create_reciept(item, seller, checkout):
     page_layout.add(_build_itemized_description_table(item=item, checkout=checkout))
 
     path = f"receipts"
-    filename = '{checkout.checkout_id}.pdf'
+    filename = f'{checkout.checkout_id}.pdf'
     if not os.path.exists(path):
         os.makedirs(path)
     with open(os.path.join(path, filename), "wb") as pdf_file_handle:
