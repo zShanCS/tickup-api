@@ -6,17 +6,17 @@ from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Depends, FastAPI, HTTPException, Form, UploadFile
 from sqlalchemy.orm import Session
-from PIL import Image
+from PIL import Image as PIL_Image
 import crud, models, schemas
 from database import SessionLocal, engine
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from dotenv import load_dotenv
 load_dotenv() 
 
 models.Base.metadata.create_all(bind=engine)
 
-from utils import create_checkout_link, obtain_oauth
+from utils import create_checkout_link, create_reciept, obtain_oauth
 
 app = FastAPI()
 origins = [
@@ -81,7 +81,7 @@ def create_item_for_user(
 ):
     print(file, file.filename)
     try:
-        im = Image.open(file.file)
+        im = PIL_Image.open(file.file)
     except Exception:
         raise HTTPException(status_code=400, detail="Image Error")
     db_user = crud.get_user(db=db, user_id=user_id)
@@ -129,7 +129,7 @@ def create_checkout(item_id:int, quantity:int, db: Session = Depends(get_db)):
     if not db_user:
         raise HTTPException(status_code=400, detail="ticket owner doesnt exist anymore")
         
-    result =  create_checkout_link(db_user.access_key, db_user.location_id, db_item.title, str(quantity), db_item.price, redirect_url=os.environ["OWN_FRONTEND_URL"]+'ticket-bought',currency=db_user.currency,)
+    result =  create_checkout_link(db_user.access_key, db_user.location_id, db_item.title, str(quantity), db_item.price, redirect_url=os.environ["OWN_BASE_URL"]+'ticket-bought',currency=db_user.currency,)
     print(item_id)
     if result.is_success():
         #save transaction
@@ -147,7 +147,7 @@ def create_checkout(item_id:int, quantity:int, db: Session = Depends(get_db)):
         return HTTPException(status_code=400, detail=result.errors)
 
 
-@app.get('/ticket-bought', response_class=RedirectResponse, status_code=302)
+@app.get('/ticket-bought', response_class=HTMLResponse)
 def ticket_bought(checkoutId:str, transactionId:str, db: Session = Depends(get_db) ):
     print(checkoutId, transactionId)
 
@@ -174,7 +174,49 @@ def ticket_bought(checkoutId:str, transactionId:str, db: Session = Depends(get_d
     db.add(db_checkout)
     db.commit()
     db.refresh(db_checkout)
-    return f'{os.environ["OWN_FRONTEND_URL"]}ticket-bought'
+
+
+    db_seller = db.query(models.User).filter(models.User.id == db_item.owner_id).first()
+    if not db_seller:
+        raise HTTPException(status_code=400, detail="Seller not found")
+
+
+    #create pdf receipt
+    create_reciept(
+        checkout=db_checkout, item=db_item, seller=db_seller
+    )
+
+
+
+    html_content = f"""
+    <html>
+        <head>
+            <title>Some HTML in here</title>
+        </head>
+        <body style="height:100%;display:flex; justify-content:center; align-item:center;">
+            <div>
+                <h1 style="text-align:center;" >Redirecting...</h1>
+                <a hidden download href='/pdf/{checkoutId}' >Download Receipt</a>
+            </div>
+            <script>
+                document.querySelector('a').click()
+                location='{os.environ['OWN_FRONTEND_URL']}ticket-bought/'
+            </script>
+        </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content, status_code=200)
+
+
+@app.get('/pdf/{checkoutId}',  response_class=FileResponse)
+def get_pdf(checkoutId:str,):
+    path = f'receipts/{checkoutId}.pdf'
+    if os.path.exists(path):
+        return path
+    else:
+        raise HTTPException(status_code=404, detail='Receipt Not Found') 
+    
+    
 
 
 @app.get('/oauth-redirect')
