@@ -7,7 +7,7 @@ from borb.pdf.page.page import Page
 from borb.pdf.canvas.layout.page_layout.multi_column_layout import SingleColumnLayout
 from decimal import Decimal
 from borb.pdf.canvas.layout.image.image import Image
-
+from pathlib import Path
 from borb.pdf.canvas.layout.table.fixed_column_width_table import FixedColumnWidthTable as Table
 from borb.pdf.canvas.layout.text.paragraph import Paragraph
 from borb.pdf.canvas.layout.layout_element import Alignment
@@ -143,6 +143,8 @@ def create_reciept(item, seller, checkout):
     # Itemized description
     page_layout.add(_build_itemized_description_table(item=item, checkout=checkout))
 
+    fle = Path(f"receipts/{checkout.checkout_id}.pdf")
+    fle.touch(exist_ok=True)
     with open(f"receipts/{checkout.checkout_id}.pdf", "wb") as pdf_file_handle:
         PDF.dumps(pdf_file_handle, pdf)
     
