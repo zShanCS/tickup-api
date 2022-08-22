@@ -20,7 +20,8 @@ from utils import create_checkout_link, create_reciept, obtain_oauth
 
 app = FastAPI()
 origins = [
-    "https://tickup.netlify.app/",
+    "*",
+    "https://tickup.netlify.app",
     "http://localhost:3000",
     "http://localhost:8000",
 ]
@@ -28,7 +29,6 @@ origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
