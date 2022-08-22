@@ -104,7 +104,7 @@ def create_reciept(item, seller, checkout):
 
     page_layout.add(table_seller) 
     try:
-        img = PIL_Image.open(f'images/{item.id}-{item.image}')
+        img = PIL_Image.open(f'{item.image}')
 
         basewidth = 300
         wpercent = (basewidth / float(img.size[0]))
