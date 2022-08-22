@@ -103,6 +103,9 @@ def create_reciept(item, seller, checkout):
     table_seller.no_borders()
 
     page_layout.add(table_seller) 
+    
+    page_layout.add(_build_invoice_information(checkout=checkout, item=item))
+
     try:
         img = PIL_Image.open(f'{item.image}')
 
@@ -111,8 +114,6 @@ def create_reciept(item, seller, checkout):
         hsize = int((float(img.size[1]) * float(wpercent)))
         img = img.resize((basewidth, hsize), PIL_Image.LANCZOS)
         
-        page_layout.add(_build_invoice_information(checkout=checkout, item=item))
-
         page_layout.add(    
             Image(        
             img,        
@@ -160,21 +161,21 @@ def create_reciept(item, seller, checkout):
 
 
 def _build_invoice_information(checkout, item):    
-    table_001 = Table(number_of_rows=4, number_of_columns=3)
+    table_001 = Table(number_of_rows=4, number_of_columns=2)
 	
     # table_001.add(Paragraph(" "))    
-    table_001.add(Paragraph(" "))    
+    # table_001.add(Paragraph(" "))    
     table_001.add(Paragraph("Invoice Date :", font="Helvetica-Bold", horizontal_alignment=Alignment.RIGHT))    
     now = datetime.now()    
     table_001.add(Paragraph("%d/%d/%d" % (now.day, now.month, now.year)))
 	
     # table_001.add(Paragraph(" "))    
-    table_001.add(Paragraph(" "))    
+    # table_001.add(Paragraph(" "))    
     table_001.add(Paragraph("Invoice #", font="Helvetica-Bold", horizontal_alignment=Alignment.RIGHT))
     table_001.add(Paragraph(f"{checkout.checkout_id}"))  
 
 
-    table_001.add(Paragraph(" "))    
+    # table_001.add(Paragraph(" "))    
     table_001.add(Paragraph("Departure :", font="Helvetica-Bold", horizontal_alignment=Alignment.RIGHT))
     table_001.add(Paragraph(f"{item.departure_date}"))   
 	
@@ -188,7 +189,7 @@ def _build_invoice_information(checkout, item):
     # table_001.add(Paragraph(" "))
 
     # table_001.add(Paragraph(" "))
-    table_001.add(Paragraph(" "))
+    # table_001.add(Paragraph(" "))
     table_001.add(Paragraph(" "))
     table_001.add(Paragraph(" "))
 
