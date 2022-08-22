@@ -69,7 +69,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 @app.post("/api/users/{user_id}/items/", response_model=schemas.Item )
 def create_item_for_user(
     user_id: int,
-    file: UploadFile,
+    # file: UploadFile,
     title:str = Form(...), 
     description: str = Form(...), 
     price:int = Form(...),
@@ -78,9 +78,10 @@ def create_item_for_user(
     days:int = Form(3),
     db: Session = Depends(get_db)
 ):
-    print(file, file.filename)
+    # print(file, file.filename)
     try:
-        im = PIL_Image.open(file.file)
+        # im = PIL_Image.open(file.file)
+        pass
     except Exception:
         raise HTTPException(status_code=400, detail="Image Error")
     db_user = crud.get_user(db=db, user_id=user_id)
@@ -92,7 +93,7 @@ def create_item_for_user(
         stock= total_seats,
         total_seats=total_seats,
         price=price,
-        image=file.filename,
+        # image=file.filename,
         departure_date=departure_date,
         days=days,
         state='Scheduled'
@@ -100,7 +101,7 @@ def create_item_for_user(
     print(item,'created')
     print('saving image now')
     item = crud.create_user_item(db=db, item=item, user_id=user_id)
-    im.save(f'images/{item.id}-{file.filename}')
+    # im.save(f'images/{item.id}-{file.filename}')
     return item
 
 
