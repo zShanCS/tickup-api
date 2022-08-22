@@ -223,6 +223,27 @@ def redirect(code:str, response_type:str, state:str, db: Session = Depends(get_d
         own_secret=os.environ['OWN_SECRET'],
         code=code
         )
+    print(result)
+    if result.body['message'] == 'Not Authorized':
+        
+        html_content = f"""
+        <html>
+            <head>
+                <title>Some HTML in here</title>
+            </head>
+            <body style="height:100%;display:flex; justify-content:center; align-item:center;">
+                <div>
+                    <h1 style="text-align:center;" >Something Went Wrong...Redirecting...</h1>
+                </div>
+                <script>
+                    location='{os.environ['OWN_FRONTEND_URL']}login/'
+                </script>
+            </body>
+        </html>
+        """
+        return HTMLResponse(content=html_content, status_code=200)
+            # return db_user
+    print(result.body)
     access_token = result.body['access_token']
     merchant_id = result.body['merchant_id']
     client = Client(
