@@ -103,25 +103,26 @@ def create_reciept(item, seller, checkout):
     table_seller.no_borders()
 
     page_layout.add(table_seller) 
+    try:
+        img = PIL_Image.open(f'images/{item.id}-{item.image}')
 
-    img = PIL_Image.open(f'images/{item.id}-{item.image}')
+        basewidth = 300
+        wpercent = (basewidth / float(img.size[0]))
+        hsize = int((float(img.size[1]) * float(wpercent)))
+        img = img.resize((basewidth, hsize), PIL_Image.LANCZOS)
+        
+        page_layout.add(_build_invoice_information(checkout=checkout, item=item))
 
-    basewidth = 300
-    wpercent = (basewidth / float(img.size[0]))
-    hsize = int((float(img.size[1]) * float(wpercent)))
-    img = img.resize((basewidth, hsize), PIL_Image.LANCZOS)
+        page_layout.add(    
+            Image(        
+            img,        
+            width=Decimal(basewidth),        
+            height=Decimal(hsize),    
+            ))
+    except Exception as e:
+        print('error on opeeing pic',e)
+        pass
 
-
-    
-    page_layout.add(_build_invoice_information(checkout=checkout, item=item))
-
-
-    page_layout.add(    
-        Image(        
-        img,        
-        width=Decimal(basewidth),        
-        height=Decimal(hsize),    
-        ))
     table_001 = Table(number_of_rows=3, number_of_columns=1)
 	
     table_001.add(Paragraph(f"{item.title}"))

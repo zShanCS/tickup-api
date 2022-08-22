@@ -22,10 +22,7 @@ from utils import create_checkout_link, create_reciept, obtain_oauth
 
 app = FastAPI()
 origins = [
-    "*",
-    "https://tickup.netlify.app",
-    "http://localhost:3000",
-    "http://localhost:8000",
+    "*"
 ]
 
 app.add_middleware(
@@ -100,6 +97,8 @@ def create_item_for_user(
         days=days,
         state='Scheduled'
     )
+    print(item,'created')
+    print('saving image now')
     item = crud.create_user_item(db=db, item=item, user_id=user_id)
     im.save(f'images/{item.id}-{file.filename}')
     return item
