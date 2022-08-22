@@ -69,7 +69,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 @app.post("/api/users/{user_id}/items/", response_model=schemas.Item )
 def create_item_for_user(
     user_id: int,
-    # file: UploadFile,
+    file: str = Form(...),
     title:str = Form(...), 
     description: str = Form(...), 
     price:int = Form(...),
@@ -78,12 +78,6 @@ def create_item_for_user(
     days:int = Form(3),
     db: Session = Depends(get_db)
 ):
-    # print(file, file.filename)
-    try:
-        # im = PIL_Image.open(file.file)
-        pass
-    except Exception:
-        raise HTTPException(status_code=400, detail="Image Error")
     db_user = crud.get_user(db=db, user_id=user_id)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -93,7 +87,7 @@ def create_item_for_user(
         stock= total_seats,
         total_seats=total_seats,
         price=price,
-        # image=file.filename,
+        image=file,
         departure_date=departure_date,
         days=days,
         state='Scheduled'
@@ -248,7 +242,27 @@ def redirect(code:str, response_type:str, state:str, db: Session = Depends(get_d
         db.commit()
         
         db.refresh(db_user)
-        return db_user
+
+
+        
+        html_content = f"""
+        <html>
+            <head>
+                <title>Some HTML in here</title>
+            </head>
+            <body style="height:100%;display:flex; justify-content:center; align-item:center;">
+                <div>
+                    <h1 style="text-align:center;" >Redirecting...</h1>
+                </div>
+                <script>
+                    document.querySelector('a').click()
+                    location='{os.environ['OWN_FRONTEND_URL']}seller/{db_user.id}/dashboard'
+                </script>
+            </body>
+        </html>
+        """
+        return HTMLResponse(content=html_content, status_code=200)
+            # return db_user
 
     elif loc_result.is_error():
         print(loc_result.errors)
