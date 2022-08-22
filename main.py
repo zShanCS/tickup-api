@@ -115,7 +115,7 @@ def read_items(item_id:int, db: Session = Depends(get_db)):
     return items
 
 
-@app.get('/create_checkout')
+@app.get('/api/create_checkout')
 def create_checkout(item_id:int, quantity:int, db: Session = Depends(get_db)):
     if quantity<1:
         raise HTTPException(status_code=400, detail="quantity cant be less than 1")
@@ -148,7 +148,7 @@ def create_checkout(item_id:int, quantity:int, db: Session = Depends(get_db)):
         return HTTPException(status_code=400, detail=result.errors)
 
 
-@app.get('/ticket-bought', response_class=HTMLResponse)
+@app.get('/api/ticket-bought', response_class=HTMLResponse)
 def ticket_bought(checkoutId:str, transactionId:str, db: Session = Depends(get_db) ):
     print(checkoutId, transactionId)
 
@@ -197,7 +197,7 @@ def ticket_bought(checkoutId:str, transactionId:str, db: Session = Depends(get_d
         <body style="height:100%;display:flex; justify-content:center; align-item:center;">
             <div>
                 <h1 style="text-align:center;" >Redirecting...</h1>
-                <a hidden download href='/pdf/{checkoutId}' >Download Receipt</a>
+                <a hidden download href='/api/pdf/{checkoutId}' >Download Receipt</a>
             </div>
             <script>
                 document.querySelector('a').click()
@@ -209,7 +209,7 @@ def ticket_bought(checkoutId:str, transactionId:str, db: Session = Depends(get_d
     return HTMLResponse(content=html_content, status_code=200)
 
 
-@app.get('/pdf/{checkoutId}',  response_class=FileResponse)
+@app.get('/api/pdf/{checkoutId}',  response_class=FileResponse)
 def get_pdf(checkoutId:str,):
     path = f'receipts/{checkoutId}.pdf'
     if os.path.exists(path):
@@ -220,7 +220,7 @@ def get_pdf(checkoutId:str,):
     
 
 
-@app.get('/oauth-redirect')
+@app.get('/api/oauth-redirect')
 def redirect(code:str, response_type:str, state:str, db: Session = Depends(get_db)):
     result = obtain_oauth(
         os.environ['OWN_ACCESS_TOKEN'], 
@@ -260,7 +260,7 @@ def redirect(code:str, response_type:str, state:str, db: Session = Depends(get_d
         # print(result.errors)
     return 'authe success'
 
-@app.get('/oauth-link')
+@app.get('/api/oauth-link')
 def oauth_link():
     return f'https://squareup.com/oauth2/authorize?client_id=sq0idp-FuPiCIjGxeZe7JmFVfq68w&scope=PAYMENTS_WRITE+ORDERS_WRITE+ORDERS_READ+MERCHANT_PROFILE_READ&state=82201dd8d83d23cc8a48caf52b'
 
