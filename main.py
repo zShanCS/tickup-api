@@ -14,7 +14,7 @@ from fastapi.responses import HTMLResponse, FileResponse
 from dotenv import load_dotenv
 load_dotenv() 
 
-models.Base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind=engine, checkfirst=True)
 
 from utils import create_checkout_link, create_reciept, obtain_oauth
 
