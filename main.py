@@ -44,8 +44,39 @@ def get_db():
         db.close()
 
 
+def ensure_demo_users(db):
+    try:
+        db_user_1 = crud.get_user(db=db, user_id=1)
+        print("Starting Up")
+        if not db_user_1:
+            print('base users not found. creating them now')
+            user1 = schemas.UserCreate(email='nac@gmail.com', name='National Adventure Club', password='nac@gmail.com', access_key=os.environ['NAC_ACCESS_KEY'], location_id=os.environ['NAC_LOCATION'])
+            crud.create_user(db=db, user=user1)
+            
+            user2 = schemas.UserCreate(email='eac@gmail.com', name='Elite Adventure Club', password='eac@gmail.com', access_key=os.environ['EAC_ACCESS_KEY'], location_id=os.environ['EAC_LOCATION'])
+            crud.create_user(db=db, user=user2)
+            
+            img_link = 'https://res.cloudinary.com/tickup/image/upload/v1661251309/photo-1598091383021-15ddea10925d_gmri7e.jpg'
+            # item1 = schemas.ItemCreate(days=5, title='', description=, )
+            item1 =  schemas.ItemCreate(
+                title='Swat Trip',
+                description='5 Day Trip to Swat',
+                stock= 30,
+                total_seats=30,
+                price=1550,
+                image=img_link,
+                departure_date='31-12-2022T23:00',
+                days=5,
+                state='Scheduled'
+            )
+            crud.create_user_item(db=db, item=item1, user_id=1)
+    except Exception as e:
+        print('Exception occured',e)
+        pass
+
 @app.post("/api/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    ensure_demo_users(db=db)
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -54,12 +85,14 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 @app.get("/api/users/", response_model=List[schemas.User])
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    ensure_demo_users(db=db)
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
 
 @app.get("/api/users/{user_id}", response_model=schemas.User)
 def read_user(user_id: int, db: Session = Depends(get_db)):
+    ensure_demo_users(db=db)
     db_user = crud.get_user(db, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -78,6 +111,7 @@ def create_item_for_user(
     days:int = Form(3),
     db: Session = Depends(get_db)
 ):
+    ensure_demo_users(db=db)
     db_user = crud.get_user(db=db, user_id=user_id)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -101,11 +135,13 @@ def create_item_for_user(
 
 @app.get("/api/items/", response_model=List[schemas.Item])
 def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    ensure_demo_users(db=db)
     items = crud.get_items(db, skip=skip, limit=limit)
     return items
 
 @app.get("/api/items/{item_id}", response_model=schemas.Item)
 def read_items(item_id:int, db: Session = Depends(get_db)):
+    ensure_demo_users(db=db)
     items = crud.get_item(db, item_id = item_id)
     return items
 
@@ -217,6 +253,7 @@ def get_pdf(checkoutId:str,):
 
 @app.get('/api/oauth-redirect')
 def redirect(code:str, response_type:str, state:str, db: Session = Depends(get_db)):
+    ensure_demo_users(db=db)
     result = obtain_oauth(
         os.environ['OWN_ACCESS_TOKEN'], 
         own_client_id=os.environ['OWN_CLIENT_ID'], 
